@@ -4,7 +4,11 @@ import { useState } from 'react'
 import './globals.css'
 import { Moon, Sun } from 'lucide-react'
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const [darkMode, setDarkMode] = useState(false)
 
   return (
@@ -15,13 +19,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="flex items-center gap-4">
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className="p-2 rounded-lg bg-muted hover:bg-muted/80"
+              className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition"
             >
               {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
             <a
               href="/auth"
-              className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium"
+              className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium transition"
             >
               Login
             </a>
