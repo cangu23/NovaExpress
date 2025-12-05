@@ -25,7 +25,6 @@ export default function RootLayout({
               <button
                 onClick={() => setDarkMode(!darkMode)}
                 className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
-                aria-label="Toggle dark mode"
               >
                 {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
@@ -35,12 +34,12 @@ export default function RootLayout({
                 className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors flex items-center gap-2"
               >
                 <Globe className="w-4 h-4" />
-                <span className="text-sm font-medium">{lang === 'es' ? 'EN' : 'ES'}</span>
+                <span className="text-sm font-medium">{lang.toUpperCase()}</span>
               </button>
 
               <a
                 href="/auth"
-                className="px-5 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                className="px-5 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition font-medium"
               >
                 Login
               </a>
