@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Animaciones más fluidas y scroll suave */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Soporte perfecto para modo oscuro */
+.dark {
+  color-scheme: dark;
+}
