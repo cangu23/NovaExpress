@@ -6,98 +6,53 @@ import { supabase } from '@/lib/supabaseClient'
 import Image from 'next/image'
 
 export default function Profile() {
-  const params = useParams()
-  const id = params.id as string
-
+  const { id } = useParams()
   const [user, setUser] = useState<any>(null)
   const [gallery, setGallery] = useState<any[]>([])
-  )
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function loadData() {
+    async function load() {
       setLoading(true)
-      await Promise.all([fetchProfile(), fetchGallery()])
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', id).single()
+      const { data: imgs } = await supabase.from('gallery').select('id,url').eq('user_id', id)
+      setUser(profile)
+      setGallery(imgs || [])
       setLoading(false)
     }
-    loadData()
+    if (id) load()
   }, [id])
 
-  const fetchProfile = async () => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', id)
-      .single()
-    setUser(data)
-  }
-
-  const fetchGallery = async () => {
-    const { data } = await supabase
-      .from('gallery')
-      .select('id, url, created_at')
-      .eq('user_id', id)
-      .order('created_at', { ascending: false })
-    setGallery(data || [])
-  }
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
-
-  if (!user) return <p className="text-center text-muted-foreground">Perfil no encontrado</p>
+  if (loading) return <div className="text-center py-20">Cargando…</div>
+  if (!user) return <div className="text-center py-20">Perfil no encontrado</div>
 
   return (
     <div className="animate-in fade-in duration-700">
-      {/* Header del perfil */}
-      <div className="flex flex-col sm:flex-row items-center gap-6 mb-12">
-        <div className="relative">
-          <Image
-            src={user.avatar_url || '/default-avatar.png'}
-            alt="Avatar"
-            width={120}
-            height={120}
-            className="rounded-full ring-4 ring-primary/20 object-cover"
-          />
-          <div className="absolute bottom-0 right-0 w-8 h-8 bg-green-500 rounded-full ring-4 ring-background"></div>
-        </div>
-
+      <div className="flex flex-col sm:flex-row gap-8 items-center mb-12">
+        <Image
+          src={user.avatar_url || '/default-avatar.png'}
+          alt="avatar"
+          width={140}
+          height={140}
+          className="rounded-full ring-4 ring-primary/20"
+        />
         <div className="text-center sm:text-left">
-          <h1 className="text-4xl font-bold mb-2">@{user.username || id}</h1>
-          <p className="text-xl text-muted-foreground max-w-full">
-            {user.bio || 'Sin biografía aún...'}
-          </p>
+          <h1 className="text-4xl font-bold">@{user.username || id}</h1>
+          <p className="text-xl text-muted-foreground mt-2">{user.bio || 'Sin bio'}</p>
         </div>
       </div>
 
-      {/* Galería */}
-      <h2 className="text-2xl font-bold mb-6">Galería</h2>
-
+      <h2 className="text-3xl font-bold mb-6">Galería</h2>
       {gallery.length === 0 ? (
-        <p className="text-center text-muted-foreground py-12">
-          Este usuario aún no ha subido nada
-        </p>
+        <p className="text-center py-12 text-muted-foreground">Aún no hay imágenes</p>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {gallery.map((img) => (
-            <div
-              key={img.id}
-              className="group relative aspect-square overflow-hidden rounded-xl bg-muted animate-in zoom-in duration-500"
-            >
-              <Image
-                src={img.url}
-                alt="Arte"
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-110"
-              />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {gallery.map(img => (
+            <div key={img.id} className="aspect-square rounded-xl overflow-hidden bg-muted">
+              <Image src={img.url} alt="" fill className="object-cover hover:scale-110 transition" />
             </div>
           ))}
         </div>
-      )}
-    </div>
+      </div>
   )
 }
