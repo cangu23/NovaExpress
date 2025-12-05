@@ -20,34 +20,29 @@ export default function RootLayout({
             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
               NovaExpress
             </h1>
-
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <button
                 onClick={() => setDarkMode(!darkMode)}
-                className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
+                className="p-2 rounded-lg bg-muted hover:bg-muted/80"
               >
                 {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
-
               <button
                 onClick={() => setLang(lang === 'es' ? 'en' : 'es')}
-                className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors flex items-center gap-2"
+                className="px-4 py-2 rounded-lg bg-muted hover:bg-muted/80"
               >
-                <Globe className="w-4 h-4" />
-                <span className="text-sm font-medium">{lang.toUpperCase()}</span>
+                {lang.toUpperCase()}
               </button>
-
               <a
                 href="/auth"
-                className="px-5 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition font-medium"
+                className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium"
               >
                 Login
               </a>
             </div>
           </div>
         </nav>
-
-        <main className="max-w-6xl mx-auto px-4 py-8">
+        <main className="max-w-6xl mx-auto p-6">
           {children}
         </main>
       </body>
