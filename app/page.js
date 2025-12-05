@@ -1,55 +1,91 @@
 'use client'
-import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabaseClient'
-import { useRouter } from 'next/navigation'
 
-export default function Home() {
-  const [posts, setPosts] = useState([])
-  const [session, setSession] = useState(null)
-  const router = useRouter()
+import { useState, useEffect } from 'react'
+import { useParams } from 'next/navigation'
+import { supabase } from '@/lib/supabaseClient'
+import Image from 'next/image'
+
+export default function Profile() {
+  const params = useParams()
+  const id = params.id as string
+
+  const [user, setUser] = useState<any>(null)
+  const [gallery, setGallery] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setSession(session))
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-    })
+    async function loadData() {
+      setLoading(true)
+      await Promise.all([fetchProfile(), fetchGallery()])
+      setLoading(false)
+    }
+    loadData()
+  }, [id])
 
-    fetchPosts()
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  const fetchPosts = async () => {
-    const { data } = await supabase.from('posts').select('*').order('created_at', { ascending: false })
-    setPosts(data || [])
+  const fetchProfile = async () => {
+    const { data } = await supabase.from('profiles').select('*').eq('id', id).single()
+    setUser(data)
   }
 
-  const handleLike = async (postId) => {
-    // Lógica simple de like (agregamos a DB)
-    await supabase.from('likes').upsert({ post_id: postId, user_id: session?.user?.id })
-    fetchPosts() // Refresca
+  const fetchGallery = async () => {
+    const { data } = await supabase
+      .from('gallery')
+      .select('id, url, created_at')
+      .eq('user_id', id)
+      .order('created_at', { ascending: false })
+    setGallery(data || [])
   }
 
-  if (!session) return <p>Cargando... <a href="/auth">Ve a login</a></p>
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  if (!user) return <p className="text-center text-muted-foreground">Perfil no encontrado</p>
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-8">Feed de Posts</h1>
-      <div className="space-y-4">
-        {posts.map((post) => (
-          <div key={post.id} className="bg-card p-4 rounded-lg border">
-            <h3 className="font-bold">{post.title}</h3>
-            <p>{post.content}</p>
-            <div className="flex space-x-2 mt-2">
-              <button onClick={() => handleLike(post.id)} className="text-blue-500">❤️ {post.likes || 0}</button>
-              <span>Comentarios: {post.comments || 0}</span>
-            </div>
-          </div>
-        ))}
+    <div className="animate-in fade-in duration-700">
+      <div className="flex flex-col sm:flex-row items-center gap-6 mb-12">
+        <div className="relative">
+          <Image
+            src={user.avatar_url || '/default-avatar.png'}
+            alt="Avatar"
+            width={120}
+            height={120}
+            className="rounded-full ring-4 ring-primary/20 object-cover"
+          />
+          <div className="absolute bottom-0 right-0 w-8 h-8 bg-green-500 rounded-full ring-4 ring-background"></div>
+        </div>
+
+        <div className="text-center sm:text-left">
+          <h1 className="text-4xl font-bold mb-2">@{user.username || id}</h1>
+          <p className="text-xl text-muted-foreground">{user.bio || 'Sin biografía aún...'}</p>
+        </div>
       </div>
-      <button onClick={() => router.push(`/profile/${session.user.id}`)} className="mt-4 px-4 py-2 bg-primary rounded">
-        Ver tu perfil
-      </button>
+
+      </div>
+
+      <h2 className="text-2xl font-bold mb-6">Galería</h2>
+
+      {gallery.length === 0 ? (
+        <p className="text-center text-muted-foreground py-12">Aún no hay imágenes</p>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {gallery.map((img) => (
+            <div key={img.id} className="group relative aspect-square overflow-hidden rounded-xl bg-muted">
+              <Image
+                src={img.url}
+                alt="Arte"
+                fill
+                className="object-cover transition-transform group-hover:scale-110 duration-500"
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
